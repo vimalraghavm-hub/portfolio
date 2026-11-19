@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root, [data-theme="dark"], .dark {
+  /* Dark Theme Glass & Neumorphic Variables */
+  --desktop-bg: #0b0f19;
+  --surface-glass: rgba(15, 18, 28, 0.45);
+  --surface-glass-header: rgba(18, 20, 30, 0.65);
+  --surface-card: rgba(255, 255, 255, 0.05);
+  --surface-card-hover: rgba(255, 255, 255, 0.1);
+  --menu-bg: rgba(15, 18, 26, 0.68);
+  --dock-bg: rgba(25, 28, 40, 0.45);
+  --dock-border: rgba(255, 255, 255, 0.18);
+  --window-bg: rgba(15, 18, 28, 0.48);
+  --window-header-bg: rgba(20, 24, 36, 0.6);
+  --window-border: rgba(255, 255, 255, 0.18);
+  --window-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  --window-shadow-focused: 0 15px 40px rgba(0, 0, 0, 0.4), 0 35px 95px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.28), 0 0 25px rgba(59, 130, 246, 0.2);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --border-subtle: rgba(255, 255, 255, 0.14);
+  --modal-backdrop: rgba(0, 0, 0, 0.4);
+  
+  /* Neumorphic Dark Shadows */
+  --neu-flat: #181a24;
+  --neu-raised-shadow: 6px 6px 14px #101118, -6px -6px 14px #202330;
+  --neu-inset-shadow: inset 3px 3px 6px #101118, inset -3px -3px 6px #202330;
+  --neu-button-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3), -2px -2px 6px rgba(255, 255, 255, 0.05);
+
+  --icon-selected-bg: rgba(255, 255, 255, 0.18);
+  --icon-selected-border: rgba(255, 255, 255, 0.3);
+
+  --transition-speed: 350ms;
+}
+
+[data-theme="light"], .light {
+  /* Soft Light Neumorphic Glass Variables */
+  --desktop-bg: #e2e5eb;
+  --surface-glass: rgba(240, 243, 248, 0.55);
+  --surface-glass-header: rgba(245, 247, 250, 0.75);
+  --surface-card: rgba(255, 255, 255, 0.4);
+  --surface-card-hover: rgba(255, 255, 255, 0.6);
+  --menu-bg: rgba(240, 243, 248, 0.72);
+  --dock-bg: rgba(235, 238, 243, 0.58);
+  --dock-border: rgba(255, 255, 255, 0.7);
+  --window-bg: rgba(238, 241, 246, 0.58);
+  --window-header-bg: rgba(245, 247, 250, 0.75);
+  --window-border: rgba(255, 255, 255, 0.65);
+  --window-shadow: 0 10px 30px rgba(180, 190, 205, 0.35), 0 25px 70px rgba(160, 175, 195, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.6);
+  --window-shadow-focused: 0 15px 40px rgba(170, 182, 200, 0.45), 0 30px 85px rgba(150, 165, 185, 0.4), 0 0 0 1.5px rgba(37, 99, 235, 0.35), 0 0 20px rgba(37, 99, 235, 0.15);
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --modal-backdrop: rgba(30, 41, 59, 0.25);
+
+  /* Neumorphic Soft Light Shadows */
+  --neu-flat: #e2e5eb;
+  --neu-raised-shadow: 6px 6px 14px #c2c7d2, -6px -6px 14px #ffffff;
+  --neu-inset-shadow: inset 4px 4px 8px #c2c7d2, inset -4px -4px 8px #ffffff;
+  --neu-button-shadow: 4px 4px 10px #c5ca35, -4px -4px 10px #ffffff;
+
+  --icon-selected-bg: rgba(0, 0, 0, 0.08);
+  --icon-selected-border: rgba(0, 0, 0, 0.15);
+
+  --transition-speed: 350ms;
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* Universal smooth theme property transitions */
+  .theme-transition {
+    transition: background-color var(--transition-speed) ease,
+                border-color var(--transition-speed) ease,
+                box-shadow var(--transition-speed) ease,
+                color var(--transition-speed) ease,
+                fill var(--transition-speed) ease;
+  }
+
+  /* Custom macOS-style scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.55);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+}
+
+/* Glassmorphism & Neumorphism Utility Classes */
+.mac-menu-glass {
+  background: var(--menu-bg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+.mac-dock-glass {
+  background: var(--dock-bg);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  border: 1px solid var(--dock-border);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.mac-window-surface {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 40%), var(--window-bg);
+  backdrop-filter: blur(25px) saturate(140%);
+  -webkit-backdrop-filter: blur(25px) saturate(140%);
+  border: 1px solid var(--window-border);
+  box-shadow: var(--window-shadow);
+  transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.mac-window-surface-focused {
+  box-shadow: var(--window-shadow-focused);
+}
+
+/* Desktop Icon Selection Highlight */
+.desktop-icon-selected {
+  background: var(--icon-selected-bg);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--icon-selected-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
