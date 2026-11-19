@@ -12,26 +12,54 @@ export function Window({
   isActive,
   width = 820,
   height = 560,
-  initialX = 150,
-  initialY = 80,
+  initialX,
+  initialY,
+  x,
+  y,
   onClose,
   onMinimize,
   onToggleMaximize,
   onFocus,
   children
 }) {
-  const [position, setPosition] = useState({ x: initialX, y: initialY });
+  const defaultX = x !== undefined ? x : (initialX !== undefined ? initialX : 150);
+  const defaultY = y !== undefined ? y : (initialY !== undefined ? initialY : 80);
+
+  const [position, setPosition] = useState({ x: defaultX, y: defaultY });
   const [size, setSize] = useState({ width, height });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
-  const dragStartRef = useRef({ x: 0, y: 0, posX: initialX, posY: initialY });
-  const resizeStartRef = useRef({ x: 0, y: 0, posX: initialX, posY: initialY, width, height, handle: '' });
+  // Exact memory ref to store user-adjusted geometry (position & size) before maximizing
+  const preMaximizeGeometryRef = useRef({ x: defaultX, y: defaultY, width, height });
+  const prevMaximizedRef = useRef(isMaximized);
 
+  const dragStartRef = useRef({ x: 0, y: 0, posX: defaultX, posY: defaultY });
+  const resizeStartRef = useRef({ x: 0, y: 0, posX: defaultX, posY: defaultY, width, height, handle: '' });
+
+  // Handle maximize / restore transitions with exact dimension memory
   useEffect(() => {
-    setPosition({ x: initialX, y: initialY });
-    setSize({ width, height });
-  }, [initialX, initialY, width, height]);
+    if (isMaximized && !prevMaximizedRef.current) {
+      // Transitioning to Fullscreen: preserve current custom position & size
+      preMaximizeGeometryRef.current = {
+        x: position.x,
+        y: position.y,
+        width: size.width,
+        height: size.height
+      };
+    } else if (!isMaximized && prevMaximizedRef.current) {
+      // Restoring from Fullscreen: restore exact custom dimensions
+      setPosition({
+        x: preMaximizeGeometryRef.current.x,
+        y: preMaximizeGeometryRef.current.y
+      });
+      setSize({
+        width: preMaximizeGeometryRef.current.width,
+        height: preMaximizeGeometryRef.current.height
+      });
+    }
+    prevMaximizedRef.current = isMaximized;
+  }, [isMaximized]);
 
   // Handle window dragging by pointer on header bar
   const handleDragDown = (e) => {
@@ -153,13 +181,14 @@ export function Window({
             top: isMaximized ? '32px' : `${position.y}px`,
             width: isMaximized ? '100vw' : `${size.width}px`,
             height: isMaximized ? 'calc(100vh - 32px)' : `${size.height}px`,
+            borderRadius: isMaximized ? '0px' : '16px',
             transition: (isDragging || isResizing) 
               ? 'none' 
-              : 'width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)'
+              : 'width 320ms cubic-bezier(0.2, 0.8, 0.2, 1), height 320ms cubic-bezier(0.2, 0.8, 0.2, 1), left 320ms cubic-bezier(0.2, 0.8, 0.2, 1), top 320ms cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 320ms cubic-bezier(0.2, 0.8, 0.2, 1)'
           }}
-          className={`fixed flex flex-col rounded-2xl overflow-hidden mac-window-surface font-sans select-none ${
+          className={`fixed flex flex-col overflow-hidden mac-window-surface font-sans select-none ${
             isActive ? 'mac-window-surface-focused ring-1 ring-blue-500/30' : 'opacity-95'
-          } ${isMaximized ? 'rounded-none border-none' : ''}`}
+          } ${isMaximized ? 'rounded-none border-x-0 border-t-0 shadow-none' : 'rounded-2xl'}`}
         >
           {/* macOS Title Bar Header */}
           <div
@@ -167,7 +196,9 @@ export function Window({
             onPointerMove={handleDragMove}
             onPointerUp={handleDragUp}
             onDoubleClick={() => onToggleMaximize(id)}
-            className="h-10 px-4 flex items-center justify-between cursor-move shrink-0 border-b border-slate-300/30 dark:border-white/10 bg-slate-200/50 dark:bg-slate-900/50 backdrop-blur-xl transition-colors duration-300"
+            className={`h-10 px-4 flex items-center justify-between shrink-0 border-b border-slate-300/30 dark:border-white/10 bg-slate-200/50 dark:bg-slate-900/50 backdrop-blur-xl transition-colors duration-300 ${
+              isMaximized ? 'cursor-default' : 'cursor-move'
+            }`}
           >
             {/* Left Traffic Light Controls */}
             <div className="flex items-center space-x-2 group">
@@ -199,7 +230,7 @@ export function Window({
                   onToggleMaximize(id);
                 }}
                 className="w-3.5 h-3.5 rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-90 flex items-center justify-center text-slate-950 transition-all shadow-sm"
-                title={isMaximized ? "Restore Window" : "Maximize Window"}
+                title={isMaximized ? "Restore Window" : "True Fullscreen"}
               >
                 {isMaximized ? (
                   <Minimize2 className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 stroke-[3]" />
@@ -209,8 +240,8 @@ export function Window({
               </button>
             </div>
 
-            {/* Window Title */}
-            <div className="text-xs font-semibold tracking-wide truncate max-w-xs text-slate-800 dark:text-slate-200">
+            {/* Window Title with subtle macOS centering */}
+            <div className="text-xs font-semibold tracking-wide truncate max-w-sm text-slate-800 dark:text-slate-200">
               {title}
             </div>
 
@@ -222,7 +253,7 @@ export function Window({
             {children}
           </div>
 
-          {/* 8-Directional Resize Handles (Hidden when maximized or on mobile) */}
+          {/* 8-Directional Resize Handles (Hidden when maximized or during dragging) */}
           {!isMaximized && (
             <>
               {/* Edges */}

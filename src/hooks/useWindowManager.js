@@ -81,16 +81,16 @@ const INITIAL_WINDOWS = {
   },
   resume: {
     id: 'resume',
-    title: 'Resume.pdf',
+    title: 'Vimal Raghav — Resume.pdf',
     icon: 'FileText',
     isOpen: false,
     isMinimized: false,
     isMaximized: false,
     zIndex: 10,
-    width: 850,
-    height: 640,
+    width: 880,
+    height: 660,
     x: 160,
-    y: 70
+    y: 60
   },
   contact: {
     id: 'contact',

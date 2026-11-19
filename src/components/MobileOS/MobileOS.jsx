@@ -43,7 +43,7 @@ export function MobileOS({
     experience: { title: 'Experience', component: ExperienceWindow },
     education: { title: 'Education', component: EducationWindow },
     certifications: { title: 'Certifications', component: CertificationsWindow },
-    resume: { title: 'Resume.pdf', component: ResumeWindow },
+    resume: { title: 'Vimal Raghav — Resume.pdf', component: ResumeWindow },
     contact: { title: 'Contact Me', component: ContactWindow },
     terminal: { title: 'Terminal', component: TerminalWindow },
   };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Home, 
@@ -17,6 +17,45 @@ import { socialsData } from '../data/socials';
 
 export function Dock({ onOpenWindow, openWindows, onHomeClick, playClick }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const hideTimerRef = useRef(null);
+
+  // Proximity detection: Reveal dock when cursor moves within 28px of bottom screen edge
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const distFromBottom = window.innerHeight - e.clientY;
+      if (distFromBottom <= 28) {
+        if (hideTimerRef.current) {
+          clearTimeout(hideTimerRef.current);
+          hideTimerRef.current = null;
+        }
+        setIsRevealed(true);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
+
+  const handleMouseEnter = () => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+    setIsRevealed(true);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    // 500ms leave grace period before sliding back down
+    hideTimerRef.current = setTimeout(() => {
+      setIsRevealed(false);
+    }, 500);
+  };
 
   const dockItems = [
     { id: 'home', label: 'Home Desktop', icon: Home, action: onHomeClick, isApp: false },
@@ -59,7 +98,7 @@ export function Dock({ onOpenWindow, openWindows, onHomeClick, playClick }) {
   ];
 
   const getTransformProps = (index) => {
-    if (hoveredIndex === null) return { scale: 1, y: 0 };
+    if (hoveredIndex === null || !isRevealed) return { scale: 1, y: 0 };
     const distance = Math.abs(hoveredIndex - index);
     if (distance === 0) return { scale: 1.16, y: -8 };
     if (distance === 1) return { scale: 1.08, y: -4 };
@@ -67,11 +106,24 @@ export function Dock({ onOpenWindow, openWindows, onHomeClick, playClick }) {
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[900] select-none max-w-[95vw]">
+    <div 
+      className="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-[900] select-none max-w-[95vw]"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Auto-Hiding Dock Pill */}
       <div 
-        onMouseLeave={() => setHoveredIndex(null)}
-        className="h-[76px] flex items-center space-x-2.5 px-4 rounded-[26px] mac-dock-glass border shadow-2xl transition-all duration-300"
+        style={{
+          transform: isRevealed ? 'translateY(-14px)' : 'translateY(calc(100% - 18px))',
+          transition: 'transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1)'
+        }}
+        className="h-[76px] flex items-center space-x-2.5 px-4 rounded-[26px] mac-dock-glass border shadow-2xl cursor-pointer will-change-transform"
       >
+        {/* Subtle center indicator lip when dock is hidden */}
+        {!isRevealed && (
+          <div className="absolute top-1.5 left-1/2 transform -translate-x-1/2 w-12 h-1 rounded-full bg-white/40 dark:bg-white/30 pointer-events-none" />
+        )}
+
         {dockItems.map((item, index) => {
           if (item.type === 'divider') {
             return (
@@ -90,16 +142,18 @@ export function Dock({ onOpenWindow, openWindows, onHomeClick, playClick }) {
             <div
               key={item.id}
               className="relative flex flex-col items-center justify-center group cursor-pointer"
-              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseEnter={() => isRevealed && setHoveredIndex(index)}
               onClick={() => {
                 if (playClick) playClick();
                 item.action();
               }}
             >
-              {/* Tooltip with upward motion */}
-              <div className="absolute -top-10 opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-200 pointer-events-none px-2.5 py-1 text-[11px] font-medium rounded-lg shadow-lg whitespace-nowrap z-50 bg-slate-900/90 dark:bg-slate-900/95 text-slate-100 border border-white/20">
-                {item.label}
-              </div>
+              {/* Tooltip with upward motion (only visible when dock is revealed) */}
+              {isRevealed && (
+                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-200 pointer-events-none px-2.5 py-1 text-[11px] font-medium rounded-lg shadow-lg whitespace-nowrap z-50 bg-slate-900/90 dark:bg-slate-900/95 text-slate-100 border border-white/20">
+                  {item.label}
+                </div>
+              )}
 
               {/* Icon Container - Uniform Size (48x48px) */}
               <motion.div

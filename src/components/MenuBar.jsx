@@ -89,7 +89,7 @@ export function MenuBar({
   const closeDropdown = () => setActiveDropdown(null);
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-8 z-50 flex items-center justify-between px-3 text-xs font-medium mac-menu-glass select-none text-slate-800 dark:text-slate-100 transition-colors duration-300">
+    <header className="fixed top-0 left-0 right-0 h-8 z-[1000] flex items-center justify-between px-3 text-xs font-medium mac-menu-glass select-none text-slate-800 dark:text-slate-100 transition-colors duration-300">
       {/* Left Menu Section */}
       <div className="flex items-center space-x-1 sm:space-x-2">
         {/* Apple / Logo Icon */}
